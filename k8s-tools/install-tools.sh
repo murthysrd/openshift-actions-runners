@@ -125,5 +125,8 @@ install tkn ${MIRROR}/pipeline/${TKN_VERSION}/tkn-linux-amd64-${TKN_VERSION}.tar
 assert_env_var "YQ_VERSION"
 install yq https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64.tar.gz
 
+assert_env_var "GH_VERSION"
+install gh https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
+
 echo "Removing $INSTALLER_TMP"
 rm -rf $INSTALLER_TMP
