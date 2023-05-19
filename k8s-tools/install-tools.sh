@@ -28,6 +28,7 @@ extract() {
 
     local archive_name=$1
     local executable_name=$2
+    local executable_search_name=$3
     local extract_dir=${INSTALLER_TMP}${executable_name}
 
     mkdir -vp $extract_dir
@@ -45,7 +46,7 @@ extract() {
     fi
 
     # Return using global var
-    extract_result=$(find $extract_dir -type f -iname "$executable_name*")
+    extract_result=$(find $extract_dir -type f -iname "$executable_search_name")
 
     if [[ -z $extract_result ]]; then
         die "Could not find $executable_name in $extract_dir after extraction"
@@ -63,9 +64,10 @@ move_executable() {
 
 install() {
     local executable_name=$1
-    local url=$2
+    local executable_search_name=$2
+    local url=$3
     local download_filename=$(basename $url)
-    echo "Downloading $2 to $download_filename ..."
+    echo "Downloading $3 to $download_filename ..."
     curl -fLsSO $url
 
     local extname=${download_filename#*.}
@@ -78,7 +80,7 @@ install() {
         local executable_path=$executable_name
     else
         # otherwise, we have to extract it
-        extract $download_filename $executable_name
+        extract $download_filename $executable_name $executable_search_name
 
         # Global extract_result is the set in extract
         local executable_path=$extract_result
@@ -87,7 +89,7 @@ install() {
             # special case for oc targz which also contains kubectl
             local oc_path=$extract_result
 
-            extract $download_filename "kubectl"
+            extract $download_filename "kubectl" kubectl
             local kubectl_path=$extract_result
             move_executable $kubectl_path "kubectl"
 
@@ -111,22 +113,22 @@ MIRROR="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients"
 mkdir -vp $INSTALLER_TMP
 
 assert_env_var "HELM_VERSION"
-install helm ${MIRROR}/helm/${HELM_VERSION}/helm-linux-amd64.tar.gz
+install helm helm-linux-amd64 ${MIRROR}/helm/${HELM_VERSION}/helm-linux-amd64.tar.gz
 
 assert_env_var "KN_VERSION"
-install kn ${MIRROR}/serverless/${KN_VERSION}/kn-linux-amd64-${KN_VERSION}.tar.gz
+install kn kn-linux-amd64 ${MIRROR}/serverless/${KN_VERSION}/kn-linux-amd64.tar.gz
 
 assert_env_var "OC_VERSION"
-install oc ${MIRROR}/ocp/${OC_VERSION}/openshift-client-linux.tar.gz
+install oc oc ${MIRROR}/ocp/${OC_VERSION}/openshift-client-linux.tar.gz
 
 assert_env_var "TKN_VERSION"
-install tkn ${MIRROR}/pipeline/${TKN_VERSION}/tkn-linux-amd64-${TKN_VERSION}.tar.gz
+install tkn tkn ${MIRROR}/pipeline/${TKN_VERSION}/tkn-linux-amd64.tar.gz
 
 assert_env_var "YQ_VERSION"
-install yq https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64.tar.gz
+install yq yq_linux_amd64 https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64.tar.gz
 
 assert_env_var "GH_VERSION"
-install gh https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
+install gh gh https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
 
 echo "Removing $INSTALLER_TMP"
 rm -rf $INSTALLER_TMP
