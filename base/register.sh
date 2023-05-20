@@ -88,6 +88,11 @@ if [ -n "${EPHEMERAL:-}" ]; then
     ephemeral_arg="--ephemeral"
 fi
 
+disable_update_arg=""
+if [ -n "${DISABLE_UPDATES:-}" ]; then
+    disable_update_arg="--disableupdate"
+fi
+
 if [ -n "${RUNNER_TOKEN:-}" ]; then
     set -x
     ./config.sh \
@@ -98,6 +103,7 @@ if [ -n "${RUNNER_TOKEN:-}" ]; then
         ${labels_arg} \
         ${runner_group_arg} \
         ${ephemeral_arg} \
+        ${disable_update_arg} \
         --unattended \
         --replace
     set +x
